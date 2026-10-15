@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - URL Shortener</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-brand">🔗 URL Shortener</div>
+    <div class="nav-right">
+      <span id="userName" class="nav-user"></span>
+      <button id="logoutBtn" class="btn btn-logout">Logout</button>
+    </div>
+  </nav>
+
+  <div class="container dashboard-container">
+    <!-- URL Shortener Form -->
+    <div class="card">
+      <h2>Shorten a URL</h2>
+      <div id="message" class="message hidden"></div>
+
+      <form id="shortenForm" class="shorten-form">
+        <div class="input-group">
+          <input type="url" id="originalUrl" placeholder="Enter or paste a long URL here (e.g., https://example.com/very/long/path)" required>
+          <button type="submit" class="btn btn-primary" id="shortenBtn">Shorten</button>
+        </div>
+      </form>
+
+      <!-- Result display -->
+      <div id="result" class="result hidden">
+        <p>Your shortened URL:</p>
+        <div class="short-url-display">
+          <a id="shortUrlLink" href="#" target="_blank" class="short-url"></a>
+          <button id="copyBtn" class="btn btn-copy" title="Copy to clipboard">📋 Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- URL History -->
+    <div class="card">
+      <h2>Your URL History</h2>
+      <div id="historyLoading" class="loading">Loading your URLs...</div>
+      <div id="historyEmpty" class="empty-state hidden">
+        <p>You haven't shortened any URLs yet. Try it above! ☝️</p>
+      </div>
+      <div id="urlHistory" class="url-history"></div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

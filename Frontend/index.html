@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - URL Shortener</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card auth-card">
+      <div class="logo">
+        <h1>🔗 URL Shortener</h1>
+        <p>Shorten your links instantly</p>
+      </div>
+
+      <h2>Login to Your Account</h2>
+
+      <div id="message" class="message hidden"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="Enter your email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="loginBtn">
+          Login
+        </button>
+      </form>
+
+      <p class="auth-link">
+        Don't have an account? <a href="/signup">Sign up here</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const btn = document.getElementById('loginBtn');
+      const messageDiv = document.getElementById('message');
+
+      btn.disabled = true;
+      btn.textContent = 'Logging in...';
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          messageDiv.className = 'message success';
+          messageDiv.textContent = data.message;
+          setTimeout(() => window.location.href = '/dashboard', 500);
+        } else {
+          messageDiv.className = 'message error';
+          messageDiv.textContent = data.error;
+          btn.disabled = false;
+          btn.textContent = 'Login';
+        }
+      } catch (err) {
+        messageDiv.className = 'message error';
+        messageDiv.textContent = 'Network error. Please try again.';
+        btn.disabled = false;
+        btn.textContent = 'Login';
+      }
+    });
+  </script>
+</body>
+</html>
