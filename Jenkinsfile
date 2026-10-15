@@ -4,6 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = 'urlshortener:latest'
         NODE_ENV = 'test'
+        DOCKER_PATH = 'C:\\Program Files\\Docker\\Docker\\resources\\bin'
     }
 
     stages {
@@ -17,7 +18,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image...'
-                bat "docker build -t ${IMAGE_NAME} ."
+                bat '"%DOCKER_PATH%\\docker.exe" build -t %IMAGE_NAME% .'
             }
         }
 
