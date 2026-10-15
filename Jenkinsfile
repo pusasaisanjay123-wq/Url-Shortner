@@ -8,16 +8,9 @@ pipeline {
     }
 
     stages {
-        stage('Checkout Code') {
-            steps {
-                echo ' Checking out source code...'
-                checkout scm
-            }
-        }
-
         stage('Install & Test') {
             steps {
-                echo ' Running unit tests...'
+                echo ' Installing dependencies & running unit tests...'
                 bat 'cd Backend && npm ci && npm test'
             }
         }
@@ -39,7 +32,7 @@ pipeline {
 
         stage('Verify Deployment') {
             steps {
-                echo ' Verifying Kubernetes Pods...'
+                echo ' Verifying Kubernetes Pods and Services...'
                 bat 'kubectl get pods'
                 bat 'kubectl get services'
             }
@@ -48,10 +41,10 @@ pipeline {
 
     post {
         success {
-            echo ' Pipeline finished successfully!'
+            echo ' Pipeline finished successfully! App live at http://localhost:30080'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo ' Pipeline failed! Check logs above.'
         }
     }
 }
