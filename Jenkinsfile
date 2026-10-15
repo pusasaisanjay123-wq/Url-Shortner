@@ -4,7 +4,6 @@ pipeline {
     environment {
         IMAGE_NAME = 'urlshortener:latest'
         NODE_ENV = 'test'
-        DOCKER_BIN = 'C:\\Users\\Sai\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin'
     }
 
     stages {
@@ -18,23 +17,23 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image...'
-                bat '"%DOCKER_BIN%\\docker.exe" build -t %IMAGE_NAME% .'
+                bat "docker build -t ${IMAGE_NAME} ."
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
                 echo 'Deploying to Kubernetes...'
-                bat '"%DOCKER_BIN%\\kubectl.exe" apply -f k8s/'
-                bat '"%DOCKER_BIN%\\kubectl.exe" rollout restart deployment urlshortener-app'
+                bat 'kubectl apply -f k8s/'
+                bat 'kubectl rollout restart deployment urlshortener-app'
             }
         }
 
         stage('Verify Deployment') {
             steps {
                 echo 'Verifying deployment status...'
-                bat '"%DOCKER_BIN%\\kubectl.exe" get pods'
-                bat '"%DOCKER_BIN%\\kubectl.exe" get services'
+                bat 'kubectl get pods'
+                bat 'kubectl get services'
             }
         }
     }
