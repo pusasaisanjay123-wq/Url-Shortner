@@ -24,7 +24,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 echo 'Deploying to Kubernetes...'
-                bat 'kubectl apply -f k8s/'
+                bat 'kubectl apply -f kubernetes/'
                 bat 'kubectl rollout restart deployment urlshortener-app'
             }
         }
