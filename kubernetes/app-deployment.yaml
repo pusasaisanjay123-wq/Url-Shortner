@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: urlshortener-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: urlshortener
+  template:
+    metadata:
+      labels:
+        app: urlshortener
+    spec:
+      containers:
+        - name: urlshortener
+          image: urlshortener:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          env:
+            - name: PORT
+              value: "8000"
+            - name: NODE_ENV
+              value: "production"
+            - name: MONGODB_URL
+              value: "mongodb://mongo:27017/urlshortener"
+            - name: SESSION_SECRET
+              value: "k8s-super-secret-key-2024"
