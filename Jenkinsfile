@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'urlshortener:latest'
+        NODE_ENV = 'test'
         MONGODB_URL = 'mongodb://127.0.0.1:27017/urlshortener'
         SESSION_SECRET = 'jenkins-test-secret-key'
     }
