@@ -1,0 +1,41 @@
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: urlshortener-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - url-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: urlshortener-app
+    restart: unless-stopped
+    ports:
+      - "8081:8000"
+    environment:
+      PORT: 8000
+      NODE_ENV: production
+      MONGODB_URL: ${MONGODB_URL:-mongodb://mongo:27017/urlshortener}
+      SESSION_SECRET: ${SESSION_SECRET:-docker-compose-session-secret-2024}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - url-net
+
+volumes:
+  mongo-data:
+
+networks:
+  url-net:
+    driver: bridge

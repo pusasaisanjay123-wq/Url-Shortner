@@ -89,9 +89,9 @@ async function handleCopy() {
   try {
     await navigator.clipboard.writeText(shortUrl);
     const copyBtn = document.getElementById('copyBtn');
-    copyBtn.textContent = '✅ Copied!';
+    copyBtn.textContent = 'Copied!';
     setTimeout(() => {
-      copyBtn.textContent = '📋 Copy';
+      copyBtn.textContent = 'Copy';
     }, 2000);
   } catch (err) {
     // Fallback for older browsers
@@ -103,9 +103,9 @@ async function handleCopy() {
     document.body.removeChild(textArea);
 
     const copyBtn = document.getElementById('copyBtn');
-    copyBtn.textContent = '✅ Copied!';
+    copyBtn.textContent = 'Copied!';
     setTimeout(() => {
-      copyBtn.textContent = '📋 Copy';
+      copyBtn.textContent = 'Copy';
     }, 2000);
   }
 }

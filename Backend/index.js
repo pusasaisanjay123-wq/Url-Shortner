@@ -9,10 +9,32 @@ import authRoutes from "./routes/authRoute.js";
 import urlRoutes from "./routes/authUrl.js";
 import { isAuthenticated, isNotAuthenticated } from "./middleware/auth.js";
 import Url from "./models/Url.js";
+import fs from 'fs';
 
 // ESM equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Helper to find Frontend directory in both Local and Docker setups
+const resolveFrontendPath = () => {
+  const candidates = [
+    path.join(__dirname, 'Frontend'),           // Docker (/app/Frontend)
+    path.join(__dirname, '..', 'Frontend'),      // Local (Backend/../Frontend)
+    path.join(process.cwd(), 'Frontend'),       // Root execution
+  ];
+
+  for (const dir of candidates) {
+    if (fs.existsSync(dir)) {
+      console.log('Found Frontend folder at:', dir);
+      return dir;
+    }
+  }
+  
+  console.error('Could not find Frontend directory in:', candidates);
+  return path.join(__dirname, 'Frontend');
+};
+
+const frontendPath = resolveFrontendPath()
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -20,7 +42,8 @@ const PORT = process.env.PORT || 8000;
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "..", "Frontend")));
+
+app.use(express.static(path.join(frontendPath)));
 
 // Session configuration
 const sessionConfig = {
@@ -59,15 +82,20 @@ app.get("/", (req, res) => {
 });
 
 app.get("/login", isNotAuthenticated, (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "Frontend", "index.html"));
+   const file = fs.existsSync(path.join(frontendPath, 'index.html'))
+    ? path.join(frontendPath, 'index.html')
+    : path.join(frontendPath, 'login.html');
+    
+  res.sendFile(file);
+  // res.sendFile(path.join(__dirname, "..", "Frontend", "index.html"));
 });
 
 app.get("/signup", isNotAuthenticated, (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "Frontend", "signup.html"));
+  res.sendFile(path.join(frontendPath, "signup.html"));
 });
 
 app.get("/dashboard", isAuthenticated, (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "Frontend", "dashboard.html"));
+  res.sendFile(path.join(frontendPath, "dashboard.html"));
 });
 
 app.get("/health", (req, res) => {
