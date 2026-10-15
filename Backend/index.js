@@ -43,13 +43,17 @@ const frontendPath = getFrontendPath();
 // Serve static files
 app.use(express.static(frontendPath, { index: false }));
 
-// Safe file response helper
+// Safe file response helper - never throws 500
 const sendFrontendFile = (res, fileName) => {
   const possibleFiles = [fileName, "index.html", "login.html", "signup.html", "dashboard.html"];
   for (const f of possibleFiles) {
     const fullPath = path.join(frontendPath, f);
     if (fs.existsSync(fullPath)) {
-      return res.sendFile(fullPath);
+      return res.sendFile(fullPath, (err) => {
+        if (err && !res.headersSent) {
+          res.status(200).send("<!DOCTYPE html><html><body>URL Shortener</body></html>");
+        }
+      });
     }
   }
   return res.status(200).send("<!DOCTYPE html><html><body>URL Shortener</body></html>");
@@ -164,60 +168,66 @@ export default app;
 
 
 
-
-
-
-
 // import "dotenv/config";
 // import express from "express";
 // import session from "express-session";
 // import MongoStore from "connect-mongo";
 // import path from "path";
 // import { fileURLToPath } from "url";
+// import fs from "fs";
+// import mongoose from "mongoose";
 // import connectDB from "./config/db.js";
 // import authRoutes from "./routes/authRoute.js";
 // import urlRoutes from "./routes/authUrl.js";
 // import { isAuthenticated, isNotAuthenticated } from "./middleware/auth.js";
 // import Url from "./models/Url.js";
-// import fs from 'fs';
 
-// // ESM equivalent of __dirname
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
-
-// const getFrontendPath = () => {
-//   const candidates = [
-//     path.resolve(__dirname, 'Frontend'),
-//     path.resolve(__dirname, '..', 'Frontend'),
-//     path.resolve(process.cwd(), 'Frontend'),
-//     path.resolve(process.cwd(), '..', 'Frontend')
-//   ];
-
-//   for (const dir of candidates) {
-//     if (fs.existsSync(dir)) {
-//       console.log('Found Frontend folder at:', dir);
-//       return dir;
-//     }
-//   }
-//   return path.resolve(__dirname, '..', 'Frontend');
-// };
-
-// const frontendPath = getFrontendPath();
 
 // const app = express();
 // const PORT = process.env.PORT || 8000;
 
-// // Middleware
 // app.use(express.json());
 // app.use(express.urlencoded({ extended: true }));
 
+// // Resolve Frontend Directory reliably for Local, Docker, and CI/CD
+// const getFrontendPath = () => {
+//   const candidates = [
+//     path.resolve(__dirname, "Frontend"),
+//     path.resolve(__dirname, "..", "Frontend"),
+//     path.resolve(process.cwd(), "Frontend"),
+//     path.resolve(process.cwd(), "..", "Frontend"),
+//   ];
+
+//   for (const dir of candidates) {
+//     if (fs.existsSync(dir)) {
+//       return dir;
+//     }
+//   }
+//   return path.resolve(__dirname, "..", "Frontend");
+// };
+
+// const frontendPath = getFrontendPath();
+
+// // Serve static files
 // app.use(express.static(frontendPath, { index: false }));
 
-// // Session configuration
+// // Safe file response helper
+// const sendFrontendFile = (res, fileName) => {
+//   const possibleFiles = [fileName, "index.html", "login.html", "signup.html", "dashboard.html"];
+//   for (const f of possibleFiles) {
+//     const fullPath = path.join(frontendPath, f);
+//     if (fs.existsSync(fullPath)) {
+//       return res.sendFile(fullPath);
+//     }
+//   }
+//   return res.status(200).send("<!DOCTYPE html><html><body>URL Shortener</body></html>");
+// };
+
+// // Session Config
 // const sessionConfig = {
-//   secret:
-//     process.env.SESSION_SECRET ||
-//     "url-shortener-secret-key-change-in-production",
+//   secret: process.env.SESSION_SECRET || "url-shortener-secret-key-change-in-production",
 //   resave: false,
 //   saveUninitialized: false,
 //   cookie: {
@@ -229,7 +239,7 @@ export default app;
 
 // if (process.env.NODE_ENV !== "test") {
 //   sessionConfig.store = MongoStore.create({
-//     mongoUrl: process.env.MONGODB_URL,
+//     mongoUrl: process.env.MONGODB_URL || "mongodb://127.0.0.1:27017/urlshortener",
 //     collectionName: "sessions",
 //     ttl: 24 * 60 * 60,
 //   });
@@ -246,31 +256,26 @@ export default app;
 //   if (req.session && req.session.userId) {
 //     return res.redirect("/dashboard");
 //   }
-//   res.redirect("/login");
+//   return res.redirect("/login");
 // });
 
 // app.get("/login", isNotAuthenticated, (req, res) => {
-//    const file = fs.existsSync(path.join(frontendPath, 'index.html'))
-//     ? path.join(frontendPath, 'index.html')
-//     : path.join(frontendPath, 'login.html');
-    
-//   res.sendFile(file);
-//   // res.sendFile(path.join(__dirname, "..", "Frontend", "index.html"));
+//   sendFrontendFile(res, "index.html");
 // });
 
 // app.get("/signup", isNotAuthenticated, (req, res) => {
-//   res.sendFile(path.join(frontendPath, "signup.html"));
+//   sendFrontendFile(res, "signup.html");
 // });
 
 // app.get("/dashboard", isAuthenticated, (req, res) => {
-//   res.sendFile(path.join(frontendPath, "dashboard.html"));
+//   sendFrontendFile(res, "dashboard.html");
 // });
 
 // app.get("/health", (req, res) => {
 //   res.status(200).json({ status: "OK", timestamp: new Date().toISOString() });
 // });
 
-// // Short URL redirect
+// // Short URL Redirect
 // app.get("/:shortCode", async (req, res) => {
 //   try {
 //     const { shortCode } = req.params;
@@ -282,20 +287,14 @@ export default app;
 //       return res.status(404).json({ error: "Not found" });
 //     }
 
+//     if (mongoose.connection.readyState !== 1) {
+//       return res.status(404).send("URL not found");
+//     }
+
 //     const url = await Url.findOne({ shortCode });
 
 //     if (!url) {
-//       return res.status(404).send(`
-//         <!DOCTYPE html>
-//         <html>
-//         <head><title>URL Not Found</title></head>
-//         <body style="font-family:Arial;text-align:center;padding:50px;">
-//           <h1>404 - Short URL Not Found</h1>
-//           <p>The short URL you are looking for does not exist.</p>
-//           <a href="/login">Go to Login</a>
-//         </body>
-//         </html>
-//       `);
+//       return res.status(404).send("URL not found");
 //     }
 
 //     url.clicks += 1;
@@ -303,8 +302,7 @@ export default app;
 
 //     return res.redirect(url.originalUrl);
 //   } catch (err) {
-//     console.error("Redirect error:", err);
-//     res.status(500).json({ error: "Server error" });
+//     return res.status(404).send("URL not found");
 //   }
 // });
 
@@ -313,7 +311,6 @@ export default app;
 // });
 
 // app.use((err, req, res, next) => {
-//   console.error("Unhandled error:", err);
 //   res.status(500).json({ error: "Internal server error" });
 // });
 
@@ -326,3 +323,5 @@ export default app;
 // }
 
 // export default app;
+
+

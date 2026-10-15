@@ -4,13 +4,12 @@ pipeline {
     environment {
         IMAGE_NAME = 'urlshortener:latest'
         NODE_ENV = 'test'
-        SESSION_SECRET = 'jenkins-ci-secret-key'
     }
 
     stages {
         stage('Install & Test') {
             steps {
-                echo ' Installing dependencies & running unit tests...'
+                echo ' Installing dependencies & running automated tests...'
                 bat 'cd Backend && npm ci && npm test'
             }
         }
@@ -24,7 +23,7 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                echo ' Deploying to local Kubernetes cluster...'
+                echo ' Deploying to Kubernetes...'
                 bat 'kubectl apply -f k8s/'
                 bat 'kubectl rollout restart deployment urlshortener-app'
             }
@@ -41,10 +40,10 @@ pipeline {
 
     post {
         success {
-            echo ' Pipeline finished successfully! App live at http://localhost:30080'
+            echo ' Pipeline completed successfully! App live at http://localhost:30080'
         }
         failure {
-            echo ' Pipeline failed! Check logs above.'
+            echo ' Pipeline failed!'
         }
     }
 }
