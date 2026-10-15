@@ -15,12 +15,12 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Helper to find Frontend directory in both Local and Docker setups
-const resolveFrontendPath = () => {
+const getFrontendPath = () => {
   const candidates = [
-    path.join(__dirname, 'Frontend'),           // Docker (/app/Frontend)
-    path.join(__dirname, '..', 'Frontend'),      // Local (Backend/../Frontend)
-    path.join(process.cwd(), 'Frontend'),       // Root execution
+    path.resolve(__dirname, 'Frontend'),
+    path.resolve(__dirname, '..', 'Frontend'),
+    path.resolve(process.cwd(), 'Frontend'),
+    path.resolve(process.cwd(), '..', 'Frontend')
   ];
 
   for (const dir of candidates) {
@@ -29,12 +29,10 @@ const resolveFrontendPath = () => {
       return dir;
     }
   }
-  
-  console.error('Could not find Frontend directory in:', candidates);
-  return path.join(__dirname, 'Frontend');
+  return path.resolve(__dirname, '..', 'Frontend');
 };
 
-const frontendPath = resolveFrontendPath()
+const frontendPath = getFrontendPath();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -43,7 +41,7 @@ const PORT = process.env.PORT || 8000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(express.static(path.join(frontendPath)));
+app.use(express.static(frontendPath, { index: false }));
 
 // Session configuration
 const sessionConfig = {
